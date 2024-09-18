@@ -3,6 +3,8 @@ var path = require('path');
 var fs = require('fs');
 var querystring = require('querystring')
 var app = express();
+var router = express.Router();
+var router1 = express.Router();
 
 
 
@@ -33,13 +35,11 @@ app.post('/submit', function(request, response){
                 if (err) {
                     console.log(err);
                     response.writeHead(404, { 'Content-Type': 'text/plain' });
-                    response.write('Not Found!');
 
                 } else {
                     response.writeHead(200, { 'Content-Type': 'text/html' }); 
                     // записать в ответ содержимое читаемого файла 
                     response.write(data.toString());
-                    response.write('success!');
                     
                     console.log(`success!`);
 
@@ -59,12 +59,10 @@ app.post('/submit', function(request, response){
                     if(err){
                         console.log(err);
                         responce.writeHead(404, { 'Content-Type' : 'text/html'});
-                        responce.end('Not Found!');
                     }
                     else{
                         responce.writeHead(200, { 'Content-Type' : 'text/html'});
                         responce.write(data.toString());
-                        responce.end();
                     }
                 })
             }
@@ -86,36 +84,177 @@ app.get('/category/:categoryId/product/:productId', function(request, response) 
         if (err) {
             console.log(err);
             response.writeHead(404, { 'Content-Type': 'text/plain' });
-            response.write('File not found!');
-            response.end();
             return;
         }
         
         var buffer = JSON.parse(data);
         var productId = request.params['productId'];  
-        var product = buffer.find(item => item.modelCode === productId);
+        var product = buffer.find(item => item.id === productId);
 
         if (product) {
             console.log(`category: ${request.params['categoryId']}`);
             console.log(`product: ${request.params['productId']}`);
 
-            response.writeHead(200, { 'Content-Type': 'text/html' });
             response.send(`
                 <p>Name: ${product.name}</p>
                 <p>Price: ${product.price}</p>
                 <p>Model code: ${product.modelCode}</p>
+                 <p>ID: ${product.id}</p>
             `);
         } else {
             response.writeHead(404, { 'Content-Type': 'text/html' });
-            response.write(JSON.stringify({ message: 'Product not found!' }));
         }
 
-        response.end();
+    
     });
+});
+
+app.use(function(request, responce, next){
+var loggerPath = 'logger.txt';
+var data = `Adress: ${request.ip}; Time: ${new Date().toDateString()}; URL: ${request.url} \n`;
+fs.appendFile(loggerPath, data, function(err){
+    console.log('data wrote');
+    next();
+})
+
+});
+
+router.route("/")
+            .get(function(request, response){     
+                var filePath = 'data.txt';
+                fs.readFile(filePath, 'utf8', function(err, data) { 
+                    if (err) {
+                        console.log(err);
+                        response.writeHead(404, { 'Content-Type': 'text/plain' });
+                        return;
+                    }
+                
+                    
+                    var products = JSON.parse(data);
+                
+
+                    response.send(`
+                           
+                           ${products.map(product => `
+                        <p>Name: ${product.name}</p>
+                        <p>Price: ${product.price}</p>
+                        <p>Model code: ${product.modelCode}</p>
+                         <p>ID: ${product.id}</p> <hr>`)}
+                        
+                    `);
+                 
+            });
+        })
+            .post(function(request, response){
+                response.send("Product created. POST method.");
+            });
+
+
+
+            router.route("/:id")
+            .get(function(request, response){
+                var filePath = 'data.txt';
+
+                fs.readFile(filePath, 'utf8', function(err, data) { 
+                    if (err) {
+                        console.log(err);
+                        response.writeHead(404, { 'Content-Type': 'text/plain' });
+                        return;
+                    }
+                
+                    
+                    var products = JSON.parse(data);
+                    var productId = request.params.id; // переменной productId присваивается значение параметра маршрута id, который передается в URL запроса
+                    var product = products.find(p => p.id === productId);
+
+                    if(product){
+                        response.send(`
+                           
+                           
+                         <p>Name: ${product.name}</p>
+                         <p>Price: ${product.price}</p>
+                         <p>Model code: ${product.modelCode}</p>
+                          <p>ID: ${product.id}</p> <hr>`)
+                         
+             
+                    }
+                    else {
+                        // Если продукт не найден, отправляем ошибку 404
+                        response.writeHead(404, { 'Content-Type': 'text/html' });
+                        response.end(`<h1>Product with ID ${productId} not found</h1>`);
+                    }
+                })
+               
+                
+            });
+
+app.use("/products", router);
+
+
+
+router1.route('/')
+.get(function(request, response){
+    var filePath = 'categories.txt';
+    fs.readFile(filePath, 'utf8', function(err, data) { 
+        if (err) {
+            console.log(err);
+            response.writeHead(404, { 'Content-Type': 'text/plain' });
+            return;
+        }
+    
+        
+        var categories = JSON.parse(data);
+    
+
+        response.send(`
+               
+               ${categories.map(category => `
+            <p>Name: ${category.name}</p>
+           <hr>`)}
+            
+        `);
+    });
+     
 });
 
 
 
+
+router1.route('/:id')
+.get(function(request, response){
+    var filePath = 'categories.txt';
+
+    fs.readFile(filePath, 'utf8', function(err, data) { 
+        if (err) {
+            console.log(err);
+            response.writeHead(404, { 'Content-Type': 'text/plain' });
+            return;
+        }
+    
+        
+        var categories = JSON.parse(data);
+        var categoryId = request.params.id; // переменной productId присваивается значение параметра маршрута id, который передается в URL запроса
+        var category = categories.find(c => c.id === categoryId);
+
+        if(category){
+            response.send(`
+               
+               
+             <p>Name: ${category.name}</p> <hr>`)
+             
+ 
+        }
+        else {
+            // Если продукт не найден, отправляем ошибку 404
+            response.writeHead(404, { 'Content-Type': 'text/html' });
+            response.end(`<h1>Category with ID ${categoryId} not found</h1>`);
+        }
+    })
+   
+    
+});
+
+app.use('/category', router1);
 
 app.get('/', function(request, response){
     console.log(request.url);

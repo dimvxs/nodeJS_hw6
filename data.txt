@@ -2,16 +2,22 @@
     {
         "name": "Dell XPS 13",
         "price": 999.99,
-        "modelCode": "XPS13-2024"
+        "modelCode": "XPS13-2024",
+        "category": "laptop", 
+        "id": "1"
     },
     {
         "name": "MacBook Air",
         "price": 1199.99,
-        "modelCode": "MBA-2024"
+        "modelCode": "MBA-2024",
+        "category": "laptop",
+        "id": "2"
     },
     {
         "name": "Lenovo ThinkPad X1",
         "price": 1299.99,
-        "modelCode": "TPX1-2024"
+        "modelCode": "TPX1-2024",
+        "category": "laptop",
+        "id": "3"
     }
 ]

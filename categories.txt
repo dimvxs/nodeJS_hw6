@@ -1,0 +1,26 @@
+[
+    {
+        "name": "laptop",
+        "id": "1"
+    },
+
+     {
+        "name": "toys",
+        "id": "2"
+    },
+
+     {
+        "name": "books",
+        "id": "3"
+    },
+
+     {
+        "name": "drinks",
+        "id": "4"
+    },
+
+     {
+        "name": "food",
+        "id": "5"
+    }
+]
